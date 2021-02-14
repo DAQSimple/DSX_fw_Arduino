@@ -1,5 +1,6 @@
 // This program will read the input buffer as a char string
 // and parse it and perform the actions
+// Author: Jay Pacamarra
 
 typedef struct {
   char  ID[20];
