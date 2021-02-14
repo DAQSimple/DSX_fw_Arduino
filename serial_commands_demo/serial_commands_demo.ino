@@ -68,7 +68,7 @@ void loop() {
   else if(strcmp(DSXpacket.ID, "pwm") == 0) {
     if(DSXpacket.loc == 11) {
       if(DSXpacket.val<0) DSXpacket.val=0;
-      else if(DSXpacket.val>255) DSXpacket.val=100;
+      else if(DSXpacket.val>100) DSXpacket.val=100;
       else
         analogWrite(DSXpacket.loc, map(DSXpacket.val, 0,100, 0,255));
     }
