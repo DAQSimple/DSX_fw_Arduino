@@ -26,7 +26,7 @@ void process_packet();
 void gioInit(); 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600,SERIAL_8O1);
 
   buffer_state = EMPTY; // buffer is initially empty
 
@@ -93,7 +93,8 @@ void receive_packet() {
     index++;
 
     // new line character detected, end of packet
-    if(inChar == '\n'){
+    // or max allowed buffer size is reached
+    if(inChar == '\n' || index == 49){
       buffer_state = FULL;
       strncpy(Buffer, tempBuffer, sizeof(Buffer));
       index=0;
@@ -102,21 +103,16 @@ void receive_packet() {
 }
 
 void process_packet() {
-  Serial.print(Buffer);
   
   char *pointerToFoundData = strstr(Buffer, keyword); //go find keyword
   if (pointerToFoundData != NULL) { // found it
     int positionInString = pointerToFoundData - Buffer;
-    Serial.print("Keyword starts at ");
-    Serial.println(positionInString);
 
     //strip good data
     char goodData[50];
     strncpy(goodData, &Buffer[positionInString + strlen(keyword)], sizeof(goodData));
     strncpy(Buffer, "", sizeof(Buffer));
     buffer_state = EMPTY;
-
-    Serial.println(goodData);
 
     //PARSE *** PARSE *** PARSE *** PARSE *** PARSE *** PARSE *** PARSE ***
     const char delimeter[] = ",";
@@ -128,24 +124,16 @@ void process_packet() {
       strncpy(parsedStrings[i],token, sizeof(parsedStrings[i]));
     }
 
-    for(unsigned int i=0; i<3; ++i)
-      Serial.println(parsedStrings[i]);  //should have the 5 data strings parsed out
-
     // CONVERT TO THE CORRECT NUMBER TYPE
     strncpy(DSXpacket.ID, parsedStrings[0], sizeof(DSXpacket.ID));
     DSXpacket.loc = atoi(parsedStrings[1]);
     DSXpacket.val = atoi(parsedStrings[2]);
 
-    // Print converted numbers
-    Serial.println("Converted");
-    Serial.println(DSXpacket.ID);
-    Serial.println(DSXpacket.loc);
-    Serial.println(DSXpacket.val);    
-
   }
   else {  // The keyword was not detected
+    Serial.println("No keyword detected\n");
     strncpy(Buffer, "", sizeof(Buffer));
     buffer_state = EMPTY;    
-    Serial.println("No keyword detected\n");
+    
   } 
 }
