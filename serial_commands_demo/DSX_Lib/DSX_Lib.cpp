@@ -17,8 +17,8 @@ unsigned char buffer_state = EMPTY; 	// Current state of buffer (full, empty)
 unsigned char index = 0;    			// Index into the char array
 char keyword[] = "dsx";     			// keyword, used for parsing
 DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
-unsigned char ardDioPins[] = {2,4,7,8,9,10,11,12,13};	// available arduino digital pins
-unsigned char ardPwmPins[] = {3,5,6};
+unsigned char ardDioPins[] = {2,4,6,7,8,9,10,12,13};	// available arduino digital pins
+unsigned char ardPwmPins[] = {3,5,11};
 char * commands[3] = {"Dio", "configDio", "pwm"};
 
 
@@ -122,6 +122,7 @@ void exec_command(DSXpacket_t packet) {
 void exec_Dio(int pin, int value) {
 	if(value < 0 || value > 1) value = 0;
 	if(is_valid_dio_pin(pin)) digitalWrite(pin, value);
+	else Serial.println("Invalid Pin");
 }
 
 /**
@@ -154,6 +155,9 @@ void exec_configDio(int pin, int config) {
 			break;
 		}
 	}
+	else {
+		Serial.println("Invalid Pin");
+	}
 }
 
 /**
@@ -171,7 +175,8 @@ void exec_configDio(int pin, int config) {
 void exec_pwm(int pin, int value) {
 	if(value<0) value=0;
 	else if(value>100) value=100;
-	if(is_valid_pwm_pin) analogWrite(pin, map(value, 0,100, 0,255));   
+	if(is_valid_pwm_pin(pin)) analogWrite(pin, map(value, 0,100, 0,255));
+	else Serial.println("Invalid Pin");
 }
 
 /**
