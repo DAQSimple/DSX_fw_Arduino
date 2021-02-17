@@ -1,0 +1,12 @@
+DSXpacket_t	KEYWORD1
+receive_packet	KEYWORD2
+process_packet	KEYWORD2
+gioInit	KEYWORD2
+exec_command	KEYWORD2
+exec_Dio	KEYWORD2
+exec_configDio	KEYWORD2
+exec_pwm	KEYWORD2
+is_valid_pwm_pin	KEYWORD2
+is_valid_dio_pin	KEYWORD2
+get_buffer_state	KEYWORD2
+get_packet	KEYWORD2			
