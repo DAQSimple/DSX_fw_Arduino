@@ -23,13 +23,13 @@ char * commands[3] = {"Dio", "configDio", "pwm"};
 
 
 /**
- * @brief  Checks if the pin is a valid Digital pin
+ * @brief  	Checks if the pin is a valid Digital pin
  *
- * @note   true = valid pin, false = invalid pin
+ * @note	true = valid pin, false = invalid pin
  *
- * @param  int pin
+ * @param  	int pin
  *
- * @retval bool
+ * @retval 	bool
  */
 bool is_valid_dio_pin(int pin) {
 	bool valid_dio = false;
@@ -40,13 +40,13 @@ bool is_valid_dio_pin(int pin) {
 }
 
 /**
- * @brief  Checks if the pin is a valid PWM pin
+ * @brief  	Checks if the pin is a valid PWM pin
  *
- * @note   true = valid pin, false = invalid pin
+ * @note   	true = valid pin, false = invalid pin
  *
- * @param  int pin
+ * @param  	int pin
  *
- * @retval bool
+ * @retval 	bool
  */
 bool is_valid_pwm_pin(int pin) {
 	bool valid_pwm = false;
@@ -57,14 +57,14 @@ bool is_valid_pwm_pin(int pin) {
 }
 
 /**
- * @brief  Initializes pins on the Arduino Uno
+ * @brief  	Initializes pins on the Arduino Uno
  *
- * @note   Every pin in ardDioPins is set as INPUT
- *			    Pin 13 is set by default as an OUTPUT
+ * @note   	Every pin in ardDioPins is set as INPUT
+ *		   	Pin 13 is set by default as an OUTPUT
  *
- * @param  None
+ * @param  	None
  *
- * @retval None
+ * @retval 	None
  */
 void gioInit() {
 	for (unsigned int i=0 ; i<sizeof(ardDioPins) ; ++i) {
@@ -74,20 +74,20 @@ void gioInit() {
 }
 
 /**
- * @brief  Executes the valid commands from packet
+ * @brief  	Executes the valid commands from packet
  *
- * @note   The packet must have values for ID, loc, and val
+ * @note   	The packet must have values for ID, loc, and val
  *
- * @param  packet of type DSXpacket_t
+ * @param  	packet of type DSXpacket_t
  *
- * @retval None
+ * @retval 	None
  */
 void exec_command(DSXpacket_t packet) {
 
 	// Check if the ID is valid
 	bool temp_valid_ID = false;
 	for(unsigned int i=0 ; i<3 ; ++i) {
-		if (strcmp(packet.ID, commands[i]) == 0) temp_valid_ID = true; 
+		if(strcmp(packet.ID, commands[i]) == 0) temp_valid_ID = true; 
 	}
 	if(temp_valid_ID == false) {	// no valid ID found
 		Serial.println("Unknown command");
@@ -108,32 +108,34 @@ void exec_command(DSXpacket_t packet) {
 }
 
 /**
- * @brief  Executes digital input/output command
+ * @brief  	Executes digital input/output command
  *
- * @note   pin can be any pin defined in ardDioPins[]
- *			    value is 0 = LOW, 1 = HIGH
+ * @note   	pin can be any pin defined in ardDioPins[]
+ *		   	value is 0 = LOW, 1 = HIGH, anything else is 0	
  *
- * @param  int pin
+ * @param  	int pin
  *
  * @param	int value
  *
- * @retval None
+ * @retval 	None
  */
 void exec_Dio(int pin, int value) {
+	if(value < 0 || value > 1) value = 0;
 	if(is_valid_dio_pin(pin)) digitalWrite(pin, value);
 }
 
 /**
- * @brief  Executes command to configure pin
+ * @brief  	Executes command to configure pin
  *
- * @note   pin can be any pin defined in ardDioPins[]
- *			    value can be 0 = INPUT, 1 = INPUT_PULLUP, 2 = OUTPUT
+ * @note   	pin can be any pin defined in ardDioPins[]
+ *			value can be 0 = INPUT, 1 = INPUT_PULLUP, 2 = OUTPUT
+ *			default is INPUT
  *
- * @param  int pin
+ * @param  	int pin
  *
- * @param  int value
+ * @param  	int value
  *
- * @retval bool
+ * @retval 	bool
  */
 void exec_configDio(int pin, int config) {
 	if(is_valid_dio_pin(pin)) {
@@ -155,49 +157,46 @@ void exec_configDio(int pin, int config) {
 }
 
 /**
- * @brief  Executes command set PWM duty cycle
+ * @brief  	Executes command set PWM duty cycle
  *
- * @note   pin can be any pin defined in ardPwmPins[]
- *			    value accepts integer only from 0 - 100
+ * @note   	pin can be any pin defined in ardPwmPins[]
+ *			value accepts integer only from 0 - 100
  *
- * @param  int pin
+ * @param  	int pin
  *
- * @param  int value
+ * @param  	int value
  *
- * @retval bool
+ * @retval 	bool
  */
 void exec_pwm(int pin, int value) {
-	if(is_valid_pwm_pin) {
-		if		  (value<0) value=0;
-		else if	(value>100) value=100;
-		else 	  analogWrite(pin, map(value, 0,100, 0,255));   
-	}
-
+	if(value<0) value=0;
+	else if(value>100) value=100;
+	if(is_valid_pwm_pin) analogWrite(pin, map(value, 0,100, 0,255));   
 }
 
 /**
- * @brief  Returns buffer state
+ * @brief  	Returns buffer state
  *
- * @note   Buffer state can either be FULL or EMPTY
+ * @note   	Buffer state can either be FULL or EMPTY
  *
- * @param  None
+ * @param  	None
  *
- * @retval unsigned char
+ * @retval 	unsigned char
  */
 unsigned char get_buffer_state() {
 	return buffer_state;
 }
 
 /**
- * @brief  Reads incoming data
+ * @brief  	Reads incoming data
  *
- * @note   Incoming data is saved one byte at a time
- *			    Buffer is set FULL if new line detected
- *			    or if the buffer is about to overflow
+ * @note   	Incoming data is saved one byte at a time
+ *			Buffer is set FULL if new line detected
+ *			or if the buffer is about to overflow
  *
- * @param  None
+ * @param  	None
  *
- * @retval None
+ * @retval 	None
  */
 void receive_packet() {
 	// Store characters one byte at a time into the Buffer
@@ -216,13 +215,13 @@ void receive_packet() {
 }
 
 /**
- * @brief  Parse raw packet and saves ID, loc, and val information
+ * @brief  	Parse raw packet and saves ID, loc, and val information
  *
- * @note   None
+ * @note   	None
  *
- * @param  None
+ * @param  	None
  *
- * @retval None
+ * @retval 	None
  */
 void process_packet() {
 
@@ -261,13 +260,13 @@ void process_packet() {
 }
 
 /**
- * @brief  Returns ready to use packet for exec_command()
+ * @brief  	Returns ready to use packet for exec_command()
  *
- * @note   None
+ * @note   	None
  *
- * @param  None
+ * @param  	None
  *
- * @retval DSXpacket_t
+ * @retval 	DSXpacket_t
  */
 DSXpacket_t get_packet() {
 	return DSXpacket;
