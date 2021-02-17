@@ -1,5 +1,5 @@
 # DSX_fw_Arduino
-fw prototype on the Arduino. To be implemented on the DSX fw four the STM board we select.
+fw prototype on the Arduino Uno. To be implemented on the DSX fw for the STM board we select.
 
 # DSX Library Installation
 1. Copy DSX_Lib folder to 
