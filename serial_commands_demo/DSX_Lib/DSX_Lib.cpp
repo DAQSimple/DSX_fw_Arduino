@@ -89,7 +89,7 @@ void exec_command(DSXpacket_t packet) {
 	for(unsigned int i=0 ; i<3 ; ++i) {
 		if(strcmp(packet.ID, commands[i]) == 0) temp_valid_ID = true; 
 	}
-	if(temp_valid_ID == false) {	// no valid ID found
+	if(temp_valid_ID == false && strlen(packet.ID) > 0) {	// no valid ID found
 		Serial.println("Unknown command");
 		return;	
 	}
