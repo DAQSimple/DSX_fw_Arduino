@@ -17,8 +17,8 @@ unsigned char buffer_state = EMPTY; 	// Current state of buffer (full, empty)
 unsigned char index = 0;    			// Index into the char array
 char keyword[] = "dsx";     			// keyword, used for parsing
 DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
-unsigned char ardDioPins[] = {2,4,6,7,8,9,10,12,13};	// available arduino digital pins
-unsigned char ardPwmPins[] = {3,5,11};
+unsigned char ardDioPins[] = {2,3,4,5,7,8,11,12,13};	// available arduino digital pins
+unsigned char ardPwmPins[] = {6,9,10};
 char * commands[3] = {"Dio", "configDio", "pwm"};
 
 
@@ -50,7 +50,7 @@ bool is_valid_dio_pin(int pin) {
  */
 bool is_valid_pwm_pin(int pin) {
 	bool valid_pwm = false;
-	for(unsigned int i=0; i<sizeof(ardPwmPins) ; ++i) {
+	for(unsigned int i=0 ; i<sizeof(ardPwmPins) ; ++i) {
 		if(pin == ardPwmPins[i]) valid_pwm = true;
 	}
 	return valid_pwm;
@@ -183,6 +183,8 @@ void exec_pwm(int pin, int value) {
  * @brief  	Returns buffer state
  *
  * @note   	Buffer state can either be FULL or EMPTY
+ *			FULL buffer state does not mean that the buffer 
+ *			has exceded MAX_BUFFER_SIZE
  *
  * @param  	None
  *
@@ -242,7 +244,7 @@ void process_packet() {
 
 		//PARSE *** PARSE *** PARSE *** PARSE *** PARSE *** PARSE *** PARSE ***
 		const char delimeter[] = ",";
-		char parsedStrings[3][20];    // init 5 character strings with each having 20 bytes
+		char parsedStrings[3][20];    // init 3 character strings with each having 20 bytes
 		char *token = strtok(goodData, delimeter);
 		strncpy(parsedStrings[0], token, sizeof(parsedStrings[0])); // first one
 		for(unsigned int i=1; i<3; ++i) {
@@ -250,7 +252,7 @@ void process_packet() {
 			strncpy(parsedStrings[i],token, sizeof(parsedStrings[i]));
 		}
 
-		// CONVERT TO THE CORRECT NUMBER TYPE
+		// CONVERT TO THE CORRECT NUMBER TYPE AND SAVE TO DSXpacket
 		strncpy(DSXpacket.ID, parsedStrings[0], sizeof(DSXpacket.ID));
 		DSXpacket.loc = atoi(parsedStrings[1]);
 		DSXpacket.val = atoi(parsedStrings[2]);

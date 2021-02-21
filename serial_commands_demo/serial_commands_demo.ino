@@ -21,7 +21,7 @@ void loop() {
   if(get_buffer_state() == FULL) {
     process_packet();       // Parse keyword and data after keyword
     packet = get_packet();  // Save packet (contains ID, loc, and val)
-    exec_command(packet);   // Execute predefined commands based on received packet  
+    exec_command(packet);   // Execute predefined commands based on received packet 
   }
   
    
