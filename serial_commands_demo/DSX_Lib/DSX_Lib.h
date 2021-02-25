@@ -27,11 +27,12 @@ typedef struct {
 /**** FUNCTION PROTOTYPES ****/
 void receive_packet();
 void process_packet();
-void gioInit();
+void initPins();
 void exec_command(DSXpacket_t);
 void exec_Dio(int pin, int value);
 void exec_configDio(int pin, int config);
 void exec_pwm(int pin, int value);
+void exec_servoWrite(int pin, int value);
 bool is_valid_pwm_pin(int pin);
 bool is_valid_dio_pin(int pin);
 unsigned char get_buffer_state();

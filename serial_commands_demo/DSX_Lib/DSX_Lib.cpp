@@ -8,6 +8,7 @@ Author:     Jay
 
 #include "Arduino.h"
 #include "DSX_Lib.h"
+#include <Servo.h>
 
 
 /**** VARIABLE DECLERATIONS ****/
@@ -18,8 +19,9 @@ unsigned char index = 0;    			// Index into the char array
 char keyword[] = "dsx";     			// keyword, used for parsing
 DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
 unsigned char ardDioPins[] = {2,3,4,5,7,8,11,12,13};	// available arduino digital pins
-unsigned char ardPwmPins[] = {6,9,10};
-char * commands[3] = {"Dio", "configDio", "pwm"};
+unsigned char ardPwmPins[] = {9,10};					// available arduino pwm pins
+unsigned char ardServoPin = 6;	// available arduini servo pin
+Servo myservo;	// create servo object 
 
 
 /**
@@ -66,11 +68,13 @@ bool is_valid_pwm_pin(int pin) {
  *
  * @retval 	None
  */
-void gioInit() {
+void initPins() {
 	for (unsigned int i=0 ; i<sizeof(ardDioPins) ; ++i) {
 		pinMode(ardDioPins[i],INPUT);
 	}
 	pinMode(13,OUTPUT);
+	
+	myservo.attach(ardServoPin);
 }
 
 /**
@@ -84,16 +88,6 @@ void gioInit() {
  */
 void exec_command(DSXpacket_t packet) {
 
-	// Check if the ID is valid
-	bool temp_valid_ID = false;
-	for(unsigned int i=0 ; i<3 ; ++i) {
-		if(strcmp(packet.ID, commands[i]) == 0) temp_valid_ID = true; 
-	}
-	if(temp_valid_ID == false && strlen(packet.ID) > 0) {	// no valid ID found
-		Serial.println("Unknown command");
-		return;	
-	}
-
 	/**** MAKE DECISIONS BASED ON PROCESSED PACKET HERE ****/
 	if(strcmp(packet.ID, "Dio") == 0) {
 		exec_Dio(packet.loc,packet.val);
@@ -103,6 +97,12 @@ void exec_command(DSXpacket_t packet) {
 	}
 	else if(strcmp(packet.ID, "pwm") == 0) {
 		exec_pwm(packet.loc,packet.val);
+	}
+	else if (strcmp(packet.ID, "servo") == 0) {
+		exec_servoWrite(packet.loc,packet.val);
+	}
+	else {
+		Serial.println("Unknown command");
 	}
 
 }
@@ -136,7 +136,7 @@ void exec_Dio(int pin, int value) {
  *
  * @param  	int value
  *
- * @retval 	bool
+ * @retval 	None
  */
 void exec_configDio(int pin, int config) {
 	if(is_valid_dio_pin(pin)) {
@@ -170,12 +170,34 @@ void exec_configDio(int pin, int config) {
  *
  * @param  	int value
  *
- * @retval 	bool
+ * @retval 	None
  */
 void exec_pwm(int pin, int value) {
 	if(value<0) value=0;
 	else if(value>100) value=100;
 	if(is_valid_pwm_pin(pin)) analogWrite(pin, map(value, 0,100, 0,255));
+	else Serial.println("Invalid Pin");
+}
+
+/**
+ * @brief  	Executes command to rotate servo pin 
+ *
+ * @note   	pin can be any pin defined in ardPwmPins[]
+ *			value accepts integer only from 0 - 180
+ *
+ * @param  	int pin
+ *
+ * @param  	int value
+ *
+ * @retval 	None
+ */
+void exec_servoWrite(int pin, int value) {
+	if(value<0) value=0;
+	else if(value>180) value=180;
+	if(pin == ardServoPin) {
+		myservo.write(value);
+		delay(2);
+	}
 	else Serial.println("Invalid Pin");
 }
 
@@ -212,7 +234,7 @@ void receive_packet() {
 	tempBuffer[index]=inChar;
 	index++;
 
-	// new line character detected, end of packet
+	// linefeed character detected so we reached the end of packet
 	if(inChar == '\n' || index == MAX_BUFFER_SIZE-1 ){
 		buffer_state = FULL;
 		strncpy(Buffer, tempBuffer, sizeof(Buffer));

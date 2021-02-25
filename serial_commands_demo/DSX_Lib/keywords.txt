@@ -1,7 +1,7 @@
 DSXpacket_t	KEYWORD1
 receive_packet	KEYWORD2
 process_packet	KEYWORD2
-gioInit	KEYWORD2
+initPins	KEYWORD2
 exec_command	KEYWORD2
 exec_Dio	KEYWORD2
 exec_configDio	KEYWORD2

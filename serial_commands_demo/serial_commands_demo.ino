@@ -5,12 +5,12 @@
 
 #include "DSX_Lib.h"
 
-DSXpacket_t packet;
+DSXpacket_t packet; // create a DSXpacket object to store ID,loc,val info
 
 
 void setup() {
   Serial.begin(9600);
-  gioInit();
+  initPins();
   
 }
 
