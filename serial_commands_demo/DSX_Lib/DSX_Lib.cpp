@@ -127,37 +127,33 @@ void initPins() {
  * @retval 	None
  */
 void exec_command(DSXpacket_t packet) {
-	if(buffer_state == FULL) {
-		/**** MAKE DECISIONS BASED ON PROCESSED PACKET HERE ****/
-		if(strcmp(packet.ID, "Dio") == 0) {
-			exec_Dio(packet.loc,packet.val);
-		}
-		else if(strcmp(packet.ID, "digitalRead") == 0) {
-			exec_digitalRead(packet.loc);
-		}
-		else if (strcmp(packet.ID, "analogRead") == 0) {
-			exec_analogRead(packet.loc);
-		}
-		else if(strcmp(packet.ID, "pwm") == 0) {
-			exec_pwm(packet.loc,packet.val);
-		}
-		else if (strcmp(packet.ID, "servo") == 0) {
-			exec_servoWrite(packet.loc,packet.val);
-		}
-		else if (strcmp(packet.ID, "getDioMode") == 0) {
-			getDioMode(packet.loc);
-		}
-		else if (strcmp(packet.ID, "getSerial") == 0) {
-			getSerial();
-		}
-			
-		else {
-			Serial.println("Unknown command");
-		}
+	/**** MAKE DECISIONS BASED ON PROCESSED PACKET HERE ****/
+	if(strcmp(packet.ID, "Dio") == 0) {
+		exec_Dio(packet.loc,packet.val);
 	}
-	
-	// Clear the buffer once the command is executed
-	clear_buffer();
+	else if(strcmp(packet.ID, "digitalRead") == 0) {
+		exec_digitalRead(packet.loc);
+	}
+	else if (strcmp(packet.ID, "analogRead") == 0) {
+		exec_analogRead(packet.loc);
+	}
+	else if(strcmp(packet.ID, "pwm") == 0) {
+		exec_pwm(packet.loc,packet.val);
+	}
+	else if (strcmp(packet.ID, "servo") == 0) {
+		exec_servoWrite(packet.loc,packet.val);
+	}
+	else if (strcmp(packet.ID, "getDioMode") == 0) {
+		getDioMode(packet.loc);
+	}
+	else if (strcmp(packet.ID, "getSerial") == 0) {
+		getSerial();
+	}
+		
+	else {
+		Serial.println("Unknown command");
+	}
+
 }
 
 /**
@@ -344,6 +340,8 @@ void process_packet() {
 		//strip good data
 		char goodData[50];
 		strncpy(goodData, &Buffer[positionInString + strlen(keyword)], sizeof(goodData));
+		// Clear the buffer once the command is executed
+		clear_buffer();
 
 		//PARSE *** PARSE *** PARSE *** PARSE *** PARSE *** PARSE *** PARSE ***
 		const char delimeter[] = ",";
@@ -362,13 +360,7 @@ void process_packet() {
 		// Save loc value as an integer
 		// if ID is analogRead, get only number (ex. A0 -> 0)
 		if(strcmp(DSXpacket.ID,"analogRead")==0)
-			// analog pin was not specified, set loc to -1 which should send out incorrect pin
-			if(strcmp(DSXpacket.loc,"")==0) {
-				DSXpacket.loc = -1;
-			}
-			else { 			
-				DSXpacket.loc = atoi(&parsedStrings[1][1]);
-			}
+			DSXpacket.loc = atoi(&parsedStrings[1][1]);
 		else
 			DSXpacket.loc = atoi(parsedStrings[1]);
 		
