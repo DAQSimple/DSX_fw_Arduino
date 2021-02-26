@@ -40,6 +40,7 @@ bool is_valid_dio_in_pin(int pin);
 bool is_valid_dio_out_pin(int pin);
 bool is_valid_analog_pin(int pin);
 unsigned char get_buffer_state();
+void getSerial();
 DSXpacket_t get_packet();
 
 

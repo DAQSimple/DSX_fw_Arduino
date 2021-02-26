@@ -147,7 +147,9 @@ void exec_command(DSXpacket_t packet) {
 	else if (strcmp(packet.ID, "getDioMode") == 0) {
 		getDioMode(packet.loc);
 	}
-
+	else if (strcmp(packet.ID, "getSerial") == 0) {
+		getSerial();
+	}	
 	else {
 		Serial.println("Unknown command");
 	}
@@ -260,6 +262,21 @@ void exec_servoWrite(int pin, int value) {
  */
 unsigned char get_buffer_state() {
 	return buffer_state;
+}
+
+/**
+ * @brief  	Show serial configuration settings
+ *
+ * @note   	Buffer state can either be FULL or EMPTY
+ *			FULL buffer state does not mean that the buffer 
+ *			has exceded MAX_BUFFER_SIZE
+ *
+ * @param  	None
+ *
+ * @retval 	unsigned char
+ */
+void getSerial() {
+	Serial.println("9600,8,N,1");
 }
 
 /**
