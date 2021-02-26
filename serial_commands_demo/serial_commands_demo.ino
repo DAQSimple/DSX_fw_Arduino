@@ -11,7 +11,6 @@ DSXpacket_t packet; // create a DSXpacket object to store ID,loc,val info
 void setup() {
   Serial.begin(9600);
   initPins();
-  
 }
 
 void loop() {

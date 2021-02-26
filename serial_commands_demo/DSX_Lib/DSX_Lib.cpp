@@ -18,14 +18,16 @@ unsigned char buffer_state = EMPTY; 	// Current state of buffer (full, empty)
 unsigned char index = 0;    			// Index into the char array
 char keyword[] = "dsx";     			// keyword, used for parsing
 DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
-unsigned char ardDioPins[] = {2,3,4,5,7,8,11,12,13};	// available arduino digital pins
-unsigned char ardPwmPins[] = {9,10};					// available arduino pwm pins
+unsigned char ardDioInPins[] = {2,3,4,5,7};		// available arduino INPUT digital pins
+unsigned char ardDioOutPins[] = {8,11,12,13}; 	// available arduino OUTPUT digital pins
+unsigned char ardPwmPins[] = {9,10};			// available arduino pwm pins
+unsigned char ardAnalogPins[] = {0,1,2,3,4,5};	// A0,A1,A2,A3,A4,A5	
 unsigned char ardServoPin = 6;	// available arduini servo pin
 Servo myservo;	// create servo object 
 
 
 /**
- * @brief  	Checks if the pin is a valid Digital pin
+ * @brief  	Checks if the pin is a valid Digital INPUT pin
  *
  * @note	true = valid pin, false = invalid pin
  *
@@ -33,10 +35,27 @@ Servo myservo;	// create servo object
  *
  * @retval 	bool
  */
-bool is_valid_dio_pin(int pin) {
+bool is_valid_dio_in_pin(int pin) {
 	bool valid_dio = false;
-	for(unsigned int i=0; i<sizeof(ardDioPins) ; ++i) {
-		if(pin == ardDioPins[i]) valid_dio = true;
+	for(unsigned int i=0; i<sizeof(ardDioInPins) ; ++i) {
+		if(pin == ardDioInPins[i]) valid_dio = true;
+	}
+	return valid_dio;
+}
+
+/**
+ * @brief  	Checks if the pin is a valid Digital OUTPUT pin
+ *
+ * @note	true = valid pin, false = invalid pin
+ *
+ * @param  	int pin
+ *
+ * @retval 	bool
+ */
+bool is_valid_dio_out_pin(int pin) {
+	bool valid_dio = false;
+	for(unsigned int i=0; i<sizeof(ardDioOutPins) ; ++i) {
+		if(pin == ardDioOutPins[i]) valid_dio = true;
 	}
 	return valid_dio;
 }
@@ -59,21 +78,42 @@ bool is_valid_pwm_pin(int pin) {
 }
 
 /**
+ * @brief  	Checks if the pin is a valid analog input pin
+ *
+ * @note   	true = valid pin, false = invalid pin
+ *
+ * @param  	int pin
+ *
+ * @retval 	bool
+ */
+bool is_valid_analog_pin(int pin) {
+	bool valid_analogPin = false;
+	for(unsigned int i=0 ; i<sizeof(ardAnalogPins) ; ++i) {
+		if(pin == ardAnalogPins[i]) valid_analogPin = true;
+	}
+	return valid_analogPin;
+}
+
+/**
  * @brief  	Initializes pins on the Arduino Uno
  *
- * @note   	Every pin in ardDioPins is set as INPUT
- *		   	Pin 13 is set by default as an OUTPUT
+ * @note   	Every pin in ardDioInPins is set as INPUT with pullup
+ *		   	Every pin in ardDioOutPins is set as OUTPUT
  *
  * @param  	None
  *
  * @retval 	None
  */
 void initPins() {
-	for (unsigned int i=0 ; i<sizeof(ardDioPins) ; ++i) {
-		pinMode(ardDioPins[i],INPUT);
+	// Initialize arduino input pins with pullup
+	for (unsigned int i=0 ; i<sizeof(ardDioInPins) ; ++i) {
+		pinMode(ardDioInPins[i],INPUT_PULLUP);
 	}
-	pinMode(13,OUTPUT);
-	
+	// Initialize arduino output pins
+	for (unsigned int i=0 ; i<sizeof(ardDioOutPins) ; ++i) {
+		pinMode(ardDioOutPins[i],OUTPUT);
+	}
+	// initialize servo pin 6
 	myservo.attach(ardServoPin);
 }
 
@@ -92,8 +132,11 @@ void exec_command(DSXpacket_t packet) {
 	if(strcmp(packet.ID, "Dio") == 0) {
 		exec_Dio(packet.loc,packet.val);
 	}
-	else if(strcmp(packet.ID, "configDio") == 0) {
-		exec_configDio(packet.loc,packet.val);
+	else if(strcmp(packet.ID, "digitalRead") == 0) {
+		exec_digitalRead(packet.loc);
+	}
+	else if (strcmp(packet.ID, "analogRead") == 0) {
+		exec_analogRead(packet.loc);
 	}
 	else if(strcmp(packet.ID, "pwm") == 0) {
 		exec_pwm(packet.loc,packet.val);
@@ -101,10 +144,48 @@ void exec_command(DSXpacket_t packet) {
 	else if (strcmp(packet.ID, "servo") == 0) {
 		exec_servoWrite(packet.loc,packet.val);
 	}
+	else if (strcmp(packet.ID, "getDioMode") == 0) {
+		getDioMode(packet.loc);
+	}
+
 	else {
 		Serial.println("Unknown command");
 	}
 
+}
+
+/**
+ * @brief  	Read digital pin, float = 1 because of pullup
+ *
+ * @note   	If the pin reads HIGH = 1
+ *			If the pin reads LOW = 0
+ *
+ * @param  	int pin
+ *
+ * @retval 	None
+ */
+void exec_digitalRead(int pin) {
+	if(is_valid_dio_in_pin(pin)) {
+		Serial.println(digitalRead(pin));
+	}
+	else Serial.println("Invalid pin");
+}
+
+/**
+ * @brief  	Read analog input pin
+ *
+ * @note   	prints input voltage (0-5V)
+ *
+ * @param  	int pin
+ *
+ * @retval 	None
+ */
+void exec_analogRead(int pin) {
+	if(is_valid_analog_pin(pin)) {
+		float voltage = (analogRead(pin) / 1023.0) * 5;	// 0 - 5V
+		Serial.println(voltage);
+	}
+	else Serial.println("Invalid pin");
 }
 
 /**
@@ -121,43 +202,8 @@ void exec_command(DSXpacket_t packet) {
  */
 void exec_Dio(int pin, int value) {
 	if(value < 0 || value > 1) value = 0;
-	if(is_valid_dio_pin(pin)) digitalWrite(pin, value);
+	if(is_valid_dio_out_pin(pin)) digitalWrite(pin, value);
 	else Serial.println("Invalid Pin");
-}
-
-/**
- * @brief  	Executes command to configure pin
- *
- * @note   	pin can be any pin defined in ardDioPins[]
- *			value can be 0 = INPUT, 1 = INPUT_PULLUP, 2 = OUTPUT
- *			default is INPUT
- *
- * @param  	int pin
- *
- * @param  	int value
- *
- * @retval 	None
- */
-void exec_configDio(int pin, int config) {
-	if(is_valid_dio_pin(pin)) {
-		switch(config){
-		case 0:
-			pinMode(pin, INPUT);
-			break;
-		case 1:
-			pinMode(pin, INPUT_PULLUP);
-			break;
-		case 2:
-			pinMode(pin, OUTPUT);
-			break;
-		default:
-			pinMode(pin, INPUT);
-			break;
-		}
-	}
-	else {
-		Serial.println("Invalid Pin");
-	}
 }
 
 /**
@@ -214,6 +260,22 @@ void exec_servoWrite(int pin, int value) {
  */
 unsigned char get_buffer_state() {
 	return buffer_state;
+}
+
+/**
+ * @brief  	Returns digital pin mode, either INPUT or OUTPUT
+ *
+ * @note   	None
+ *
+ * @param  	None
+ *
+ * @retval 	None
+ */
+void getDioMode(int pin) {
+	if(is_valid_dio_in_pin(pin)) Serial.println("INPUT");
+	else if(is_valid_dio_out_pin(pin)) Serial.println("OUTPUT");
+	else Serial.println("Invalid Pin");
+	
 }
 
 /**
@@ -275,8 +337,17 @@ void process_packet() {
 		}
 
 		// CONVERT TO THE CORRECT NUMBER TYPE AND SAVE TO DSXpacket
+		// Save ID command 
 		strncpy(DSXpacket.ID, parsedStrings[0], sizeof(DSXpacket.ID));
-		DSXpacket.loc = atoi(parsedStrings[1]);
+		
+		// Save loc value as an integer
+		// if ID is analogRead, get only number (ex. A0 -> 0)
+		if(strcmp(DSXpacket.ID,"analogRead")==0)
+			DSXpacket.loc = atoi(&parsedStrings[1][1]);
+		else
+			DSXpacket.loc = atoi(parsedStrings[1]);
+		
+		// Save value as an integer
 		DSXpacket.val = atoi(parsedStrings[2]);
 
 	}
