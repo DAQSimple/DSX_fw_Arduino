@@ -35,6 +35,7 @@ void exec_digitalRead(int pin);
 void exec_analogRead(int pin);
 void exec_pwm(int pin, int value);
 void exec_servoWrite(int pin, int value);
+void clear_buffer();
 bool is_valid_pwm_pin(int pin);
 bool is_valid_dio_in_pin(int pin);
 bool is_valid_dio_out_pin(int pin);
