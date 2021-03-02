@@ -191,9 +191,9 @@ void exec_analogRead(int pin) {
 }
 
 /**
- * @brief  	Executes digital input/output command
+ * @brief  	Executes digital write command
  *
- * @note   	pin can be any pin defined in ardDioPins[]
+ * @note   	pin can be any pin defined in ardDioOutPins[]
  *		   	value is 0 = LOW, 1 = HIGH, anything else is 0	
  *
  * @param  	int pin
@@ -230,7 +230,7 @@ void exec_pwm(int pin, int value) {
 /**
  * @brief  	Executes command to rotate servo pin 
  *
- * @note   	pin can be any pin defined in ardPwmPins[]
+ * @note   	pin can only be pin (ardServoPin)
  *			value accepts integer only from 0 - 180
  *
  * @param  	int pin
@@ -244,7 +244,6 @@ void exec_servoWrite(int pin, int value) {
 	else if(value>180) value=180;
 	if(pin == ardServoPin) {
 		myservo.write(value);
-		delay(2);
 	}
 	else Serial.println("Invalid Pin");
 }
@@ -267,13 +266,11 @@ unsigned char get_buffer_state() {
 /**
  * @brief  	Show serial configuration settings
  *
- * @note   	Buffer state can either be FULL or EMPTY
- *			FULL buffer state does not mean that the buffer 
- *			has exceded MAX_BUFFER_SIZE
+ * @note   	None
  *
  * @param  	None
  *
- * @retval 	unsigned char
+ * @retval 	None
  */
 void getSerial() {
 	Serial.println("9600,8N1");
