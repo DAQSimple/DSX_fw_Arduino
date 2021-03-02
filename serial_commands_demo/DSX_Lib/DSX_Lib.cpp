@@ -18,11 +18,16 @@ unsigned char buffer_state = EMPTY; 	// Current state of buffer (full, empty)
 unsigned char index = 0;    			// Index into the char array
 char keyword[] = "dsx";     			// keyword, used for parsing
 DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
-unsigned char ardDioInPins[] = {2,3,4,5,7};		// available arduino INPUT digital pins
+unsigned char ardDioInPins[] = {4,5,7};		// available arduino INPUT digital pins
 unsigned char ardDioOutPins[] = {8,11,12,13}; 	// available arduino OUTPUT digital pins
 unsigned char ardPwmPins[] = {9,10};			// available arduino pwm pins
 unsigned char ardAnalogPins[] = {0,1,2,3,4,5};	// A0,A1,A2,A3,A4,A5	
 unsigned char ardServoPin = 6;	// available arduini servo pin
+unsigned char ardInterruptPin2 = 2;	// arduino uno interrupt pin 2
+unsigned char ardInterruptPin3 = 3;	// arduino uno interrupt pin 3
+float speed = 0;	// will hold speed from encoder 
+unsigned int encoderCount = 0;	// count from encoder
+unsigned int ENC_COUNT_REV = 1;	// encoder count per revolution. Default = 1;
 Servo myservo;	// create servo object 
 
 
@@ -109,12 +114,30 @@ void initPins() {
 	for (unsigned int i=0 ; i<sizeof(ardDioInPins) ; ++i) {
 		pinMode(ardDioInPins[i],INPUT_PULLUP);
 	}
+
 	// Initialize arduino output pins
 	for (unsigned int i=0 ; i<sizeof(ardDioOutPins) ; ++i) {
 		pinMode(ardDioOutPins[i],OUTPUT);
 	}
+
 	// initialize servo pin 6
 	myservo.attach(ardServoPin);
+
+	// initialize interrupt pins 2 and 3
+	attachInterrupt(digitalPinToInterrupt(ardInterruptPin2),pin2IntCount,FALLING);
+}
+
+/**
+ * @brief  	Interrupt service routine of pin 2 that simply increments a variable every falling edge	
+ *
+ * @note   	None	
+ *
+ * @param  	None
+ *
+ * @retval 	None
+ */
+void pin2IntCount() {
+	encoderCount++;
 }
 
 /**
@@ -149,13 +172,44 @@ void exec_command(DSXpacket_t packet) {
 	else if (strcmp(packet.ID, "getSerial") == 0) {
 		getSerial();
 	}
-		
+	else if (strcmp(packet.ID, "encoderSpeed") == 0) {
+		getEncoderSpeed();
+	}
+	else if (strcmp(packet.ID, "encoderDir") == 0) {
+		getEncoderDir();
+	}
 	else {
 		Serial.println("Unknown command");
 	}
 
 }
 
+/**
+ * @brief  	read encoder speed	
+ *
+ * @note   	None	
+ *
+ * @param  	None	
+ *
+ * @retval 	None
+ */
+void getEncoderSpeed() {
+	speed = (float) (encoderCount * 60 / ENC_COUNT_REV);
+	Serial.println(speed);
+}
+
+/**
+ * @brief  	read encoder direction	
+ *
+ * @note   	None	
+ *
+ * @param  	None	
+ *
+ * @retval 	None
+ */
+void getEncoderDir() {
+	;
+}
 /**
  * @brief  	Read digital pin, float = 1 because of pullup
  *

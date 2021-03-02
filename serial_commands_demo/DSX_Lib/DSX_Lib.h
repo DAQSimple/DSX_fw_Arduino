@@ -28,10 +28,13 @@ typedef struct {
 void receive_packet();
 void process_packet();
 void initPins();
+void pin2IntCount();
 void exec_command(DSXpacket_t);
 void exec_Dio(int pin, int value);
 void getDioMode(int pin);
 void exec_digitalRead(int pin);
+void getEncoderSpeed();
+void getEncoderDir();
 void exec_analogRead(int pin);
 void exec_pwm(int pin, int value);
 void exec_servoWrite(int pin, int value);
