@@ -11,6 +11,9 @@ DSXpacket_t packet; // create a DSXpacket object to store ID,loc,val info
 void setup() {
   Serial.begin(9600);
   initPins();
+
+  // initialize pin 9 and 10 as 16 bit pwm
+  setupPWM16();
 }
 
 void loop() {

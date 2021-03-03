@@ -9,12 +9,16 @@ Author:     Jay
 #ifndef DSX_LIB_H
 #define DSX_LIB_H
 
+#include "Arduino.h"
+#include "DSX_Lib.h"
+#include <stdint.h>
 
 /**** DSX packet data structure */
 typedef struct {
 	char    ID[20];
 	int     loc;
 	int     val;
+	float	fval;
 }DSXpacket_t;
 
 
@@ -39,6 +43,7 @@ void getEncoderSpeed();
 void getEncoderDir();
 void exec_analogRead(int pin);
 void exec_pwm(int pin, int value);
+void exec_pwm16(int pin, float value);
 void exec_servoWrite(int pin, int value);
 void clear_buffer();
 bool is_valid_pwm_pin(int pin);

@@ -19,9 +19,9 @@ unsigned char buffer_state = EMPTY; 	// Current state of buffer (full, empty)
 unsigned char index = 0;    			// Index into the char array
 char keyword[] = "dsx";     			// keyword, used for parsing
 DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
-unsigned char ardDioInPins[] = {4,7,10,11};		// available arduino INPUT digital pins
+unsigned char ardDioInPins[] = {4,7,11};		// available arduino INPUT digital pins
 unsigned char ardDioOutPins[] = {6,8,12,13}; 	// available arduino OUTPUT digital pins
-unsigned char ardPwmPins[] = {3,5};			// available arduino pwm pins
+unsigned char ardPwmPins[] = {3,5,9,10};			// available arduino pwm pins
 unsigned char ardAnalogPins[] = {0,1,2,3,4,5};	// A0,A1,A2,A3,A4,A5	
 unsigned char ardServoPin = 6;	// available arduini servo pin
 unsigned char ardInterruptPin2 = 2;	// arduino uno interrupt pin 2
@@ -122,31 +122,32 @@ void initPins() {
 	}
 	
 	// Initialize arduino PWM pins as outputs
-	for (unsigned int i=0 ; i<sizeof(ardPwmPins) ; ++i) {
-		pinMode(ardPwmPins[i],OUTPUT);
-	}
+	//for (unsigned int i=0 ; i<sizeof(ardPwmPins) ; ++i) {
+	//	pinMode(ardPwmPins[i],OUTPUT);
+	//}
 
 	// initialize servo pin 6
-	myservo.attach(ardServoPin);
+	//myservo.attach(ardServoPin);
 
 	// initialize interrupt pins 2 and 3
-	attachInterrupt(digitalPinToInterrupt(ardInterruptPin2),pin2IntCount,FALLING);
+	//attachInterrupt(digitalPinToInterrupt(ardInterruptPin2),pin2IntCount,FALLING);
+	
 }
 
 void setupPWM16() {
-	DDRB |= _BV(PB1) | _BV(PB2); //Set pins as outputs 
-	TCCR1A = _BV(COM1A1) | _BV(COM1B1) //Non-Inv PWM 
-	| _BV(WGM11); // Mode 14: Fast PWM, TOP=ICR1
-	TCCR1B = _BV(WGM13) | _BV(WGM12) 
-	| _BV(CS10); // Prescaler 1
-	ICR1 = icr; // TOP counter value (Relieving OCR1A*)
+  DDRB  |= _BV(PB1) | _BV(PB2);       /* set pins as outputs */
+  TCCR1A = _BV(COM1A1) | _BV(COM1B1)  /* non-inverting PWM */
+        | _BV(WGM11);                 /* mode 14: fast PWM, TOP=ICR1 */
+  TCCR1B = _BV(WGM13) | _BV(WGM12)
+        | _BV(CS10);                  /* prescaler 1 */
+  ICR1 = icr;                         /* TOP counter value (freeing OCR1A*/
 }
 //* 16-bit version of analogWrite(). Only for D9 & D10
 void analogWrite16(uint8_t pin, uint16_t val) {
-	switch (pin) {
-		case 9: OCR1A = val; break;
-		case 10: OCR1B = val; break;
-	}
+  switch (pin) {
+    case  9: OCR1A = val; break;
+    case 10: OCR1B = val; break;
+  }
 }
 
 /**
@@ -184,6 +185,9 @@ void exec_command(DSXpacket_t packet) {
 	}
 	else if(strcmp(packet.ID, "pwm") == 0) {
 		exec_pwm(packet.loc,packet.val);
+	}
+	else if(strcmp(packet.ID, "pwm16") == 0) {
+		exec_pwm16(packet.loc,packet.fval);
 	}
 	else if (strcmp(packet.ID, "servo") == 0) {
 		exec_servoWrite(packet.loc,packet.val);
@@ -300,12 +304,37 @@ void exec_pwm(int pin, int value) {
 	if(value<0) value=0;
 	if(value>100) value=100;
 	if(is_valid_pwm_pin(pin)) {
-		Serial.println(value);
-		value = map(value, 0,100, 0,255);
-		Serial.println(value);
-		analogWrite(pin,value);
+		if(pin == 3 || pin == 5) {
+			value = map(value, 0,100, 0,255);
+			analogWrite(pin,value);
+		}
+		else Serial.println("Invalid Pin");
 	}
-	else Serial.println("Invalid Pin");
+}
+
+/**
+ * @brief  	Executes command set PWM duty cycle [16 Bit]
+ *
+ * @note   	pin can be any pin defined in ardPwmPins[]
+ *			value accepts floats or integer only from 0 - 100
+ *
+ * @param  	int pin
+ *
+ * @param  	float value
+ *
+ * @retval 	None
+ */
+void exec_pwm16(int pin, float value) {
+	if(value<0) value=0;
+	if(value>100) value=100;
+	if(is_valid_pwm_pin(pin)) {
+		if(pin == 9 || pin == 10){
+			value = (value / 100.0 ) * 65535;
+			value = round(value);
+			analogWrite16(pin,value);
+		}
+		else Serial.println("Invalid Pin");
+	}	
 }
 
 /**
@@ -444,8 +473,11 @@ void process_packet() {
 			DSXpacket.loc = atoi(parsedStrings[1]);
 		
 		// Save value as an integer
-		DSXpacket.val = atoi(parsedStrings[2]);
-
+		if(strcmp(DSXpacket.ID,"pwm16")==0) {
+			DSXpacket.fval = atof(parsedStrings[2]);
+		}
+		else
+			DSXpacket.val = atoi(parsedStrings[2]);
 	}
 	else {  // The keyword was not detected
 		Serial.println("No keyword detected\n");
