@@ -9,19 +9,19 @@ DSXpacket_t packet; // create a DSXpacket object to store ID,loc,val info
 
 
 void setup() {
-  Serial.begin(74880);
+  Serial.begin(9600);
   initPins();
 }
 
 void loop() {
-  while(Serial.available() > 0){
+  while (Serial.available() > 0) {
     receive_packet();       // Buffer is updated with incoming packet until FULL
   }
-  if(get_buffer_state() == FULL) {
+  if (get_buffer_state() == FULL) {
     process_packet();       // Parse keyword and data after keyword
     packet = get_packet();  // Save packet (contains ID, loc, and val)
-    exec_command(packet);   // Execute predefined commands based on received packet 
+    exec_command(packet);   // Execute predefined commands based on received packet
   }
-  
-   
+
+
 }

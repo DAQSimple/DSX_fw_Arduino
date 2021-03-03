@@ -28,6 +28,8 @@ typedef struct {
 void receive_packet();
 void process_packet();
 void initPins();
+void setupPWM16();
+void analogWrite16(uint8_t pin, uint16_t val);
 void pin2IntCount();
 void exec_command(DSXpacket_t);
 void exec_Dio(int pin, int value);
