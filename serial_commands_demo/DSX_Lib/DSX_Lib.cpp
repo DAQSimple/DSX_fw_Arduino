@@ -19,12 +19,11 @@ unsigned char buffer_state = EMPTY; 	// Current state of buffer (full, empty)
 unsigned char index = 0;    			// Index into the char array
 char keyword[] = "dsx";     			// keyword, used for parsing
 DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
-unsigned char ardDioInPins[] = {4,7,11};		// available arduino INPUT digital pins
-unsigned char ardDioOutPins[] = {6,8,12,13}; 	// available arduino OUTPUT digital pins
-unsigned char ardPwmPins[] = {3,5,9,10};			// available arduino pwm pins
+unsigned char ardDioInPins[] = {2,4,7,10};		// available arduino INPUT digital pins
+unsigned char ardDioOutPins[] = {8,9,12,13}; 	// available arduino OUTPUT digital pins
+unsigned char ardPwmPins[] = {3,5,11};			// available arduino pwm pins
 unsigned char ardAnalogPins[] = {0,1,2,3,4,5};	// A0,A1,A2,A3,A4,A5	
-unsigned char ardServoPin = 6;	// available arduini servo pin
-unsigned char ardInterruptPin2 = 2;	// arduino uno interrupt pin 2
+unsigned char ardServoPin = 6;	// available arduino servo pin
 float speed = 0;	// will hold speed from encoder 
 unsigned int encoderCount = 0;	// count from encoder
 unsigned int ENC_COUNT_REV = 1;	// encoder count per revolution. Default = 1;
@@ -120,17 +119,16 @@ void initPins() {
 	for (unsigned int i=0 ; i<sizeof(ardDioOutPins) ; ++i) {
 		pinMode(ardDioOutPins[i],OUTPUT);
 	}
-	
-	// Initialize arduino PWM pins as outputs
-	//for (unsigned int i=0 ; i<sizeof(ardPwmPins) ; ++i) {
-	//	pinMode(ardPwmPins[i],OUTPUT);
-	//}
 
 	// initialize servo pin 6
-	//myservo.attach(ardServoPin);
+	myservo.attach(ardServoPin);
 
 	// initialize interrupt pins 2 and 3
 	//attachInterrupt(digitalPinToInterrupt(ardInterruptPin2),pin2IntCount,FALLING);
+	
+	// initialize pin 9 and 10 as 16 bit pwm
+	// Note: PWM16 will make the servo on pin6 behave weirdly
+	//setupPWM16();
 	
 }
 
@@ -304,12 +302,10 @@ void exec_pwm(int pin, int value) {
 	if(value<0) value=0;
 	if(value>100) value=100;
 	if(is_valid_pwm_pin(pin)) {
-		if(pin == 3 || pin == 5) {
-			value = map(value, 0,100, 0,255);
-			analogWrite(pin,value);
-		}
-		else Serial.println("Invalid Pin");
+		value = map(value, 0,100, 0,255);
+		analogWrite(pin,value);
 	}
+	else Serial.println("Invalid Pin");
 }
 
 /**
