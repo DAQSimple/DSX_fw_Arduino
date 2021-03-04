@@ -22,12 +22,12 @@ DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
 unsigned char ardDioInPins[] = {2,4,7,10};		// available arduino INPUT digital pins
 unsigned char ardDioOutPins[] = {8,9,12,13}; 	// available arduino OUTPUT digital pins
 unsigned char ardPwmPins[] = {3,5,11};			// available arduino pwm pins
+												// PWM pins 3 and 11 can configure their frequency
 unsigned char ardAnalogPins[] = {0,1,2,3,4,5};	// A0,A1,A2,A3,A4,A5	
 unsigned char ardServoPin = 6;	// available arduino servo pin
 float speed = 0;	// will hold speed from encoder 
 unsigned int encoderCount = 0;	// count from encoder
 unsigned int ENC_COUNT_REV = 1;	// encoder count per revolution. Default = 1;
-uint16_t icr = 0xffff;		// used for setting the top counter value in the setupPWM16 function
 Servo myservo;	// create servo object 
 
 
@@ -132,22 +132,6 @@ void initPins() {
 	
 }
 
-void setupPWM16() {
-  DDRB  |= _BV(PB1) | _BV(PB2);       /* set pins as outputs */
-  TCCR1A = _BV(COM1A1) | _BV(COM1B1)  /* non-inverting PWM */
-        | _BV(WGM11);                 /* mode 14: fast PWM, TOP=ICR1 */
-  TCCR1B = _BV(WGM13) | _BV(WGM12)
-        | _BV(CS10);                  /* prescaler 1 */
-  ICR1 = icr;                         /* TOP counter value (freeing OCR1A*/
-}
-//* 16-bit version of analogWrite(). Only for D9 & D10
-void analogWrite16(uint8_t pin, uint16_t val) {
-  switch (pin) {
-    case  9: OCR1A = val; break;
-    case 10: OCR1B = val; break;
-  }
-}
-
 /**
  * @brief  	Interrupt service routine of pin 2 that simply increments a variable every falling edge	
  *
@@ -184,9 +168,6 @@ void exec_command(DSXpacket_t packet) {
 	else if(strcmp(packet.ID, "pwm") == 0) {
 		exec_pwm(packet.loc,packet.val);
 	}
-	else if(strcmp(packet.ID, "pwm16") == 0) {
-		exec_pwm16(packet.loc,packet.fval);
-	}
 	else if (strcmp(packet.ID, "servo") == 0) {
 		exec_servoWrite(packet.loc,packet.val);
 	}
@@ -195,6 +176,9 @@ void exec_command(DSXpacket_t packet) {
 	}
 	else if (strcmp(packet.ID, "getSerial") == 0) {
 		getSerial();
+	}
+	else if (strcmp(packet.ID, "setPWMFreq") == 0) {
+		exec_setPWMFreq(packet.loc,packet.val);
 	}
 	else if (strcmp(packet.ID, "encoderSpeed") == 0) {
 		getEncoderSpeed();
@@ -287,6 +271,51 @@ void exec_Dio(int pin, int value) {
 }
 
 /**
+ * @brief  	Executes command to set PWM frequency
+ *
+ * @note   	pin can be 3 or 11
+ *
+ * @param  	int pin
+ *
+ * @param  	int value
+ *
+ * @retval 	None
+ */
+void exec_setPWMFreq(int pin, int value) {
+	if(pin==3 || pin==11) {
+		// set pin 3 and pin 11 pwm to the desired frequency
+		switch(value) {
+			case 30:
+				TCCR2B = (TCCR2B & CLEAR_LAST3_LSB) | FREQ_30HZ;
+				break;
+			case 122:
+				TCCR2B = (TCCR2B & CLEAR_LAST3_LSB) | FREQ_122HZ;
+				break;
+			case 245:
+				TCCR2B = (TCCR2B & CLEAR_LAST3_LSB) | FREQ_245HZ;
+				break;
+			case 490:
+				TCCR2B = (TCCR2B & CLEAR_LAST3_LSB) | FREQ_490HZ;
+				break;
+			case 980:
+				TCCR2B = (TCCR2B & CLEAR_LAST3_LSB) | FREQ_980HZ;
+				break;
+			case 4000:
+				TCCR2B = (TCCR2B & CLEAR_LAST3_LSB) | FREQ_4KHZ;
+				break;
+			case 32000:
+				TCCR2B = (TCCR2B & CLEAR_LAST3_LSB) | FREQ_32KHZ;
+				break;
+			default:
+				Serial.println("Invalid Frequency");
+				break;
+		}
+		
+	}
+	else Serial.println("Invalid Pin");
+}
+
+/**
  * @brief  	Executes command set PWM duty cycle
  *
  * @note   	pin can be any pin defined in ardPwmPins[]
@@ -306,31 +335,6 @@ void exec_pwm(int pin, int value) {
 		analogWrite(pin,value);
 	}
 	else Serial.println("Invalid Pin");
-}
-
-/**
- * @brief  	Executes command set PWM duty cycle [16 Bit]
- *
- * @note   	pin can be any pin defined in ardPwmPins[]
- *			value accepts floats or integer only from 0 - 100
- *
- * @param  	int pin
- *
- * @param  	float value
- *
- * @retval 	None
- */
-void exec_pwm16(int pin, float value) {
-	if(value<0) value=0;
-	if(value>100) value=100;
-	if(is_valid_pwm_pin(pin)) {
-		if(pin == 9 || pin == 10){
-			value = (value / 100.0 ) * 65535;
-			value = round(value);
-			analogWrite16(pin,value);
-		}
-		else Serial.println("Invalid Pin");
-	}	
 }
 
 /**

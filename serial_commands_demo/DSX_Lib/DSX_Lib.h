@@ -22,18 +22,26 @@ typedef struct {
 }DSXpacket_t;
 
 
-/**** MACRO DEFINITIONS ****/
+/**** Buffer Macros ****/
 #define FULL                1
 #define EMPTY               0
 #define MAX_BUFFER_SIZE     50
+
+/**** Macros for changing the PWM Frequency ****/
+#define CLEAR_LAST3_LSB		B11111000
+#define FREQ_32KHZ			B00000001
+#define FREQ_4KHZ			B00000010
+#define FREQ_980HZ			B00000011
+#define FREQ_490HZ			B00000100	// default
+#define FREQ_245HZ			B00000101
+#define FREQ_122HZ			B00000110
+#define FREQ_30HZ			B00000111
 
 
 /**** FUNCTION PROTOTYPES ****/
 void receive_packet();
 void process_packet();
 void initPins();
-void setupPWM16();
-void analogWrite16(uint8_t pin, uint16_t val);
 void pin2IntCount();
 void exec_command(DSXpacket_t);
 void exec_Dio(int pin, int value);
@@ -42,6 +50,7 @@ void exec_digitalRead(int pin);
 void getEncoderSpeed();
 void getEncoderDir();
 void exec_analogRead(int pin);
+void exec_setPWMFreq(int pin, int value);
 void exec_pwm(int pin, int value);
 void exec_pwm16(int pin, float value);
 void exec_servoWrite(int pin, int value);
