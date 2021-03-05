@@ -19,8 +19,9 @@ long currentMillis = 0;
 int rpm = 0;	// will hold speed from encoder in rpm
 unsigned int encoderValue = 0;	// count from encoder
 unsigned int ENC_COUNT_REV = 48;	// encoder count per revolution. Default = 48;
-int prevEncoderCHAReading;
-int prevEncoderCHBReading;
+bool CW = 1;
+bool CCW = 0;
+bool direction;		// to store direction 1: clockwise, 0: counter clockwise
 
 // Variables for inputting into the buffer
 char Buffer[MAX_BUFFER_SIZE];           // Allocate space for the string
@@ -147,8 +148,14 @@ void initPins() {
  *
  * @retval 	None
  */
-void pin2IntCount() {
+void updateEncoder() {
 	encoderValue++;
+	
+	// check if going CW or CCW
+	if(digitalRead(encoderChB))
+		direction = CW;
+	else
+		direction = CCW;
 }
 
 /**
@@ -214,12 +221,7 @@ void exec_command(DSXpacket_t packet) {
  * @retval 	None
  */
 void getEncoderDir() {
-	if(digitalRead(encoderChA) != prevEncoderCHBReading) 
-		Serial.println("CW");
-	else
-		Serial.println("CCW");
-	
-	prevEncoderCHBReading = digitalRead(encoderChB);
+	Serial.println(direction);
 }
 /**
  * @brief  	Read digital pin, float = 1 because of pullup
@@ -529,7 +531,7 @@ void initEncoder() {
 	// initialize interrupt pins 2 for reading encoder
 	pinMode(encoderChA, INPUT_PULLUP); 
 	pinMode(encoderChB, INPUT_PULLUP);
-	attachInterrupt(digitalPinToInterrupt(encoderChA),pin2IntCount,RISING);
+	attachInterrupt(digitalPinToInterrupt(encoderChA),updateEncoder,RISING);
 	
 	// Setup initial values for timer
 	previousMillis = millis();
@@ -545,10 +547,6 @@ void initEncoder() {
  * @retval 	None
  */
  void readEncoder() {
-	// update encoder channel A reading
-	prevEncoderCHAReading = digitalRead(encoderChA);
-	prevEncoderCHBReading = digitalRead(encoderChB);
-	
 	// Update RPM value every second
 	currentMillis = millis();
 	if (currentMillis - previousMillis > 1000) {
