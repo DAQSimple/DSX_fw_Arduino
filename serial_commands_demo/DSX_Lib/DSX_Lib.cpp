@@ -478,11 +478,7 @@ void process_packet() {
 			DSXpacket.loc = atoi(parsedStrings[1]);
 		
 		// Save value as an integer
-		if(strcmp(DSXpacket.ID,"pwm16")==0) {
-			DSXpacket.fval = atof(parsedStrings[2]);
-		}
-		else
-			DSXpacket.val = atoi(parsedStrings[2]);
+		DSXpacket.val = atoi(parsedStrings[2]);
 	}
 	else {  // The keyword was not detected
 		Serial.println("No keyword detected\n");

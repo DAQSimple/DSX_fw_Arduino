@@ -18,7 +18,6 @@ typedef struct {
 	char    ID[20];
 	int     loc;
 	int     val;
-	float	fval;
 }DSXpacket_t;
 
 
