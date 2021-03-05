@@ -34,7 +34,7 @@ DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
 // Arduino Pin Defenitions
 unsigned char encoderChA = 2;
 unsigned char encoderChB = 4;
-unsigned char ardDioInPins[] = {7,10};		// available arduino INPUT digital pins
+unsigned char ardDioInPins[] = {encoderChA,encoderChB,7,10};		// available arduino INPUT digital pins
 unsigned char ardDioOutPins[] = {8,9,12,13}; 	// available arduino OUTPUT digital pins
 unsigned char ardPwmPins[] = {3,5,11};			// available arduino pwm pins
 												// PWM pins 3 and 11 can configure their frequency
@@ -404,6 +404,7 @@ void getDioMode(int pin) {
 	if(is_valid_dio_in_pin(pin)) Serial.println("INPUT");
 	else if(is_valid_dio_out_pin(pin)) Serial.println("OUTPUT");
 	else if(is_valid_pwm_pin(pin)) Serial.println("PWM OUTPUT");
+	else if(pin == ardServoPin) Serial.println("Servo PWM OUTPUT");
 	else Serial.println("Invalid Pin");
 	
 }
