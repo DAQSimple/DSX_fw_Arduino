@@ -9,4 +9,6 @@ exec_pwm	KEYWORD2
 is_valid_pwm_pin	KEYWORD2
 is_valid_dio_pin	KEYWORD2
 get_buffer_state	KEYWORD2
-get_packet	KEYWORD2			
+get_packet	KEYWORD2
+initEncoder	KEYWORD2	
+readEncoder	KEYWORD2		

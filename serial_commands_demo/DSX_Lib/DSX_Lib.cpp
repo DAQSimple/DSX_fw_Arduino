@@ -13,22 +13,32 @@ Author:     Jay
 
 
 /**** VARIABLE DECLERATIONS ****/
+// Variables for calculating rpm from encoder readings
+long previousMillis = 0;
+long currentMillis = 0;
+int rpm = 0;	// will hold speed from encoder in rpm
+unsigned int encoderValue = 0;	// count from encoder
+unsigned int ENC_COUNT_REV = 48;	// encoder count per revolution. Default = 48;
+
+// Variables for inputting into the buffer
 char Buffer[MAX_BUFFER_SIZE];           // Allocate space for the string
 char inChar;                			// Stores the current character being read 
 unsigned char buffer_state = EMPTY; 	// Current state of buffer (full, empty)
 unsigned char index = 0;    			// Index into the char array
 char keyword[] = "dsx";     			// keyword, used for parsing
 DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
-unsigned char ardDioInPins[] = {2,4,7,10};		// available arduino INPUT digital pins
+
+// Arduino Pin Defenitions
+unsigned char ardInterruptPin2 = 2;
+unsigned char ardDioInPins[] = {4,7,10};		// available arduino INPUT digital pins
 unsigned char ardDioOutPins[] = {8,9,12,13}; 	// available arduino OUTPUT digital pins
 unsigned char ardPwmPins[] = {3,5,11};			// available arduino pwm pins
 												// PWM pins 3 and 11 can configure their frequency
 unsigned char ardAnalogPins[] = {0,1,2,3,4,5};	// A0,A1,A2,A3,A4,A5	
 unsigned char ardServoPin = 6;	// available arduino servo pin
-float speed = 0;	// will hold speed from encoder 
-unsigned int encoderCount = 0;	// count from encoder
-unsigned int ENC_COUNT_REV = 1;	// encoder count per revolution. Default = 1;
-Servo myservo;	// create servo object 
+
+// Create servo object to use servo
+Servo myservo;	
 
 
 /**
@@ -122,13 +132,6 @@ void initPins() {
 
 	// initialize servo pin 6
 	myservo.attach(ardServoPin);
-
-	// initialize interrupt pins 2 and 3
-	//attachInterrupt(digitalPinToInterrupt(ardInterruptPin2),pin2IntCount,FALLING);
-	
-	// initialize pin 9 and 10 as 16 bit pwm
-	// Note: PWM16 will make the servo on pin6 behave weirdly
-	//setupPWM16();
 	
 }
 
@@ -142,7 +145,7 @@ void initPins() {
  * @retval 	None
  */
 void pin2IntCount() {
-	encoderCount++;
+	encoderValue++;
 }
 
 /**
@@ -177,6 +180,9 @@ void exec_command(DSXpacket_t packet) {
 	else if (strcmp(packet.ID, "getSerial") == 0) {
 		getSerial();
 	}
+	else if (strcmp(packet.ID, "getEncoderSpeed") == 0) {
+		getEncoderSpeed();
+	}
 	else if (strcmp(packet.ID, "setPWMFreq") == 0) {
 		exec_setPWMFreq(packet.loc,packet.val);
 	}
@@ -190,20 +196,6 @@ void exec_command(DSXpacket_t packet) {
 		Serial.println("Unknown command");
 	}
 
-}
-
-/**
- * @brief  	read encoder speed	
- *
- * @note   	None	
- *
- * @param  	None	
- *
- * @retval 	None
- */
-void getEncoderSpeed() {
-	speed = (float) (encoderCount * 60 / ENC_COUNT_REV);
-	Serial.println(speed);
 }
 
 /**
@@ -511,4 +503,48 @@ void clear_buffer() {
  */
 DSXpacket_t get_packet() {
 	return DSXpacket;
+}
+
+/**
+ * @brief  	Initialize encoder reading
+ *
+ * @note   	None
+ *
+ * @param  	None
+ *
+ * @retval 	None
+ */
+void initEncoder() {
+	// initialize interrupt pins 2 for reading encoder
+	pinMode(ardInterruptPin2, INPUT_PULLUP); 
+	attachInterrupt(digitalPinToInterrupt(ardInterruptPin2),pin2IntCount,RISING);
+	
+	// Setup initial values for timer
+	previousMillis = millis();
+}
+
+/**
+ * @brief  	Update encoder readings, sends out rpm 
+ *
+ * @note   	None
+ *
+ * @param  	None
+ *
+ * @retval 	None
+ */
+ void readEncoder() {
+	// Update RPM value every second
+	currentMillis = millis();
+	if (currentMillis - previousMillis > 1000) {
+		previousMillis = currentMillis;
+
+		// Calculate RPM
+		rpm = (float)(encoderValue * 60 / ENC_COUNT_REV);
+    
+		encoderValue = 0;
+	} 
+ }
+ 
+void getEncoderSpeed() {
+	Serial.println(rpm);
 }

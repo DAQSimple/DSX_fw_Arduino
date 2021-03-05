@@ -47,6 +47,8 @@ void exec_command(DSXpacket_t);
 void exec_Dio(int pin, int value);
 void getDioMode(int pin);
 void exec_digitalRead(int pin);
+void initEncoder();
+void readEncoder();
 void getEncoderSpeed();
 void getEncoderDir();
 void exec_analogRead(int pin);
