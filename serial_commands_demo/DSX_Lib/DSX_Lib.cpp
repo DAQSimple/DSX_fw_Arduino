@@ -13,12 +13,14 @@ Author:     Jay
 
 
 /**** VARIABLE DECLERATIONS ****/
-// Variables for calculating rpm from encoder readings
+// Variables for calculating rpm and direction from encoder readings
 long previousMillis = 0;
 long currentMillis = 0;
 int rpm = 0;	// will hold speed from encoder in rpm
 unsigned int encoderValue = 0;	// count from encoder
 unsigned int ENC_COUNT_REV = 48;	// encoder count per revolution. Default = 48;
+int prevEncoderCHAReading;
+int prevEncoderCHBReading;
 
 // Variables for inputting into the buffer
 char Buffer[MAX_BUFFER_SIZE];           // Allocate space for the string
@@ -29,8 +31,9 @@ char keyword[] = "dsx";     			// keyword, used for parsing
 DSXpacket_t DSXpacket; 					// To save packet data ID, loc, val
 
 // Arduino Pin Defenitions
-unsigned char ardInterruptPin2 = 2;
-unsigned char ardDioInPins[] = {4,7,10};		// available arduino INPUT digital pins
+unsigned char encoderChA = 2;
+unsigned char encoderChB = 4;
+unsigned char ardDioInPins[] = {7,10};		// available arduino INPUT digital pins
 unsigned char ardDioOutPins[] = {8,9,12,13}; 	// available arduino OUTPUT digital pins
 unsigned char ardPwmPins[] = {3,5,11};			// available arduino pwm pins
 												// PWM pins 3 and 11 can configure their frequency
@@ -183,6 +186,9 @@ void exec_command(DSXpacket_t packet) {
 	else if (strcmp(packet.ID, "getEncoderSpeed") == 0) {
 		getEncoderSpeed();
 	}
+	else if (strcmp(packet.ID, "getEncoderDir") == 0) {
+		getEncoderDir();
+	}
 	else if (strcmp(packet.ID, "setPWMFreq") == 0) {
 		exec_setPWMFreq(packet.loc,packet.val);
 	}
@@ -208,7 +214,12 @@ void exec_command(DSXpacket_t packet) {
  * @retval 	None
  */
 void getEncoderDir() {
-	;
+	if(digitalRead(encoderChA) != prevEncoderCHBReading) 
+		Serial.println("CW");
+	else
+		Serial.println("CCW");
+	
+	prevEncoderCHBReading = digitalRead(encoderChB);
 }
 /**
  * @brief  	Read digital pin, float = 1 because of pullup
@@ -516,8 +527,9 @@ DSXpacket_t get_packet() {
  */
 void initEncoder() {
 	// initialize interrupt pins 2 for reading encoder
-	pinMode(ardInterruptPin2, INPUT_PULLUP); 
-	attachInterrupt(digitalPinToInterrupt(ardInterruptPin2),pin2IntCount,RISING);
+	pinMode(encoderChA, INPUT_PULLUP); 
+	pinMode(encoderChB, INPUT_PULLUP);
+	attachInterrupt(digitalPinToInterrupt(encoderChA),pin2IntCount,RISING);
 	
 	// Setup initial values for timer
 	previousMillis = millis();
@@ -533,6 +545,10 @@ void initEncoder() {
  * @retval 	None
  */
  void readEncoder() {
+	// update encoder channel A reading
+	prevEncoderCHAReading = digitalRead(encoderChA);
+	prevEncoderCHBReading = digitalRead(encoderChB);
+	
 	// Update RPM value every second
 	currentMillis = millis();
 	if (currentMillis - previousMillis > 1000) {
