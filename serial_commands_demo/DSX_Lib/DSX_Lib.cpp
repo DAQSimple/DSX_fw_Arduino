@@ -169,7 +169,7 @@ void updateEncoder() {
  */
 void exec_command(DSXpacket_t packet) {
 	/**** MAKE DECISIONS BASED ON PROCESSED PACKET HERE ****/
-	if(strcmp(packet.ID, "Dio") == 0) {
+	if(strcmp(packet.ID, "digitalWrite") == 0) {
 		exec_Dio(packet.loc,packet.val);
 	}
 	else if(strcmp(packet.ID, "digitalRead") == 0) {
@@ -254,7 +254,8 @@ void exec_analogRead(int pin) {
 		float voltage = (analogRead(pin) / 1023.0) * 5;	// 0 - 5V
 		Serial.println(voltage);
 	}
-	else Serial.println("Invalid pin");
+	else 
+		Serial.println("Invalid pin");
 }
 
 /**
@@ -271,8 +272,10 @@ void exec_analogRead(int pin) {
  */
 void exec_Dio(int pin, int value) {
 	if(value < 0 || value > 1) value = 0;
-	if(is_valid_dio_out_pin(pin)) digitalWrite(pin, value);
-	else Serial.println("Invalid Pin");
+	if(is_valid_dio_out_pin(pin)) 
+		digitalWrite(pin, value);
+	else 
+		Serial.println("Invalid Pin");
 }
 
 /**
