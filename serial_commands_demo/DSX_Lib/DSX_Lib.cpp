@@ -168,16 +168,16 @@ void updateEncoder() {
  */
 void exec_command(DSXpacket_t packet) {
     /**** MAKE DECISIONS BASED ON PROCESSED PACKET HERE ****/
-    if(strcmp(packet.ID, "digitalWrite") == 0) {
+    if (strcmp(packet.ID, "digitalWrite") == 0) {
         exec_Dio(packet.loc,packet.val);
     }
-    else if(strcmp(packet.ID, "digitalRead") == 0) {
+    else if (strcmp(packet.ID, "digitalRead") == 0) {
         exec_digitalRead(packet.loc);
     }
     else if (strcmp(packet.ID, "analogRead") == 0) {
         exec_analogRead(packet.loc);
     }
-    else if(strcmp(packet.ID, "pwm") == 0) {
+    else if (strcmp(packet.ID, "pwm") == 0) {
         exec_pwm(packet.loc,packet.val);
     }
     else if (strcmp(packet.ID, "servo") == 0) {
