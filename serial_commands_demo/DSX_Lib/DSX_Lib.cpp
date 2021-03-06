@@ -20,7 +20,7 @@ unsigned int ENC_COUNT_REV = 48;    // encoder count per revolution. Default = 4
 unsigned long duration;             // duration of encoder pulse (half period) in microseconds
 bool CW = 1;
 bool CCW = 0;
-bool direction;		                // to store direction 1: clockwise, 0: counter clockwise
+bool direction;                     // to store direction 1: clockwise, 0: counter clockwise
 
 // Variables for inputting into the buffer
 char Buffer[MAX_BUFFER_SIZE];           // Allocate space for the string
@@ -33,12 +33,12 @@ DSXpacket_t DSXpacket;                  // To save packet data ID, loc, val
 // Arduino Pin Defenitions
 unsigned char encoderChA = 2;
 unsigned char encoderChB = 4;
-unsigned char ardDioInPins[] = {encoderChA,encoderChB,7,10};		// available arduino INPUT digital pins
-unsigned char ardDioOutPins[] = {8,9,12,13}; 	// available arduino OUTPUT digital pins
-unsigned char ardPwmPins[] = {3,5,11};          // available arduino pwm pins
-                                                // PWM pins 3 and 11 can configure their frequency
-unsigned char ardAnalogPins[] = {0,1,2,3,4,5};	// A0,A1,A2,A3,A4,A5	
-unsigned char ardServoPin = 6;	                // available arduino servo pin
+unsigned char ardDioInPins[] = {encoderChA,encoderChB,7,10};    // available arduino INPUT digital pins
+unsigned char ardDioOutPins[] = {8,9,12,13}; 	                // available arduino OUTPUT digital pins
+unsigned char ardPwmPins[] = {3,5,11};                          // available arduino pwm pins
+                                                                // PWM pins 3 and 11 can configure their frequency
+unsigned char ardAnalogPins[] = {0,1,2,3,4,5};	                // A0,A1,A2,A3,A4,A5	
+unsigned char ardServoPin = 6;	                                // available arduino servo pin
 
 // Create servo object to use servo
 Servo myservo;	
