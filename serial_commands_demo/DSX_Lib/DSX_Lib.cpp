@@ -14,11 +14,10 @@ Author:     Jay
 
 /**** VARIABLE DECLERATIONS ****/
 // Variables for calculating rpm and direction from encoder readings
-long previousMillis = 0;
-long currentMillis = 0;
 int rpm = 0;	// will hold speed from encoder in rpm
 unsigned int encoderValue = 0;	// count from encoder
 unsigned int ENC_COUNT_REV = 48;	// encoder count per revolution. Default = 48;
+unsigned long duration;
 bool CW = 1;
 bool CCW = 0;
 bool direction;		// to store direction 1: clockwise, 0: counter clockwise
@@ -532,31 +531,20 @@ void initEncoder() {
 	pinMode(encoderChA, INPUT_PULLUP); 
 	pinMode(encoderChB, INPUT_PULLUP);
 	attachInterrupt(digitalPinToInterrupt(encoderChA),updateEncoder,RISING);
-	
-	// Setup initial values for timer
-	previousMillis = millis();
 }
 
 /**
  * @brief  	Update encoder readings, sends out rpm 
  *
- * @note   	None
+ * @note   	Use pin 2 on the arduino uno
  *
  * @param  	None
  *
  * @retval 	None
  */
  void readEncoder() {
-	// Update RPM value every second
-	currentMillis = millis();
-	if (currentMillis - previousMillis > 1000) {
-		previousMillis = currentMillis;
-
-		// Calculate RPM
-		rpm = (float)(encoderValue * 60 / ENC_COUNT_REV);
-    
-		encoderValue = 0;
-	} 
+	duration=pulseIn(encoderChA,HIGH);	//in microseconds
+	rpm = (1/1.6668e-8) * 1/(2*duration*ENC_COUNT_REV);
  }
  
 void getEncoderSpeed() {

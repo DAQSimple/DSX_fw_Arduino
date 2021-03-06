@@ -11,7 +11,7 @@ DSXpacket_t packet; // create a DSXpacket object to store ID,loc,val info
 void setup() {
   Serial.begin(9600);
   initPins();
-  initEncoder();  
+  initEncoder();
 }
 
 void loop() {
@@ -24,7 +24,7 @@ void loop() {
     exec_command(packet);   // Execute predefined commands based on received packet
   }
 
-  // Update encoder readings every second, no delays were used
+  // Update encoder readings: speed and direction
   readEncoder();
 
 }
