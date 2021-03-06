@@ -14,13 +14,13 @@ Author:     Jay
 
 /**** VARIABLE DECLERATIONS ****/
 // Variables for calculating rpm and direction from encoder readings
-int rpm = 0;	// will hold speed from encoder in rpm
-unsigned int encoderValue = 0;	    // count from encoder
-unsigned int ENC_COUNT_REV = 48;	// encoder count per revolution. Default = 48;
-unsigned long duration;
+int rpm = 0;                        // will hold speed from encoder in rpm
+unsigned int encoderValue = 0;      // count from encoder
+unsigned int ENC_COUNT_REV = 48;    // encoder count per revolution. Default = 48;
+unsigned long duration;             // duration of encoder pulse (half period) in microseconds
 bool CW = 1;
 bool CCW = 0;
-bool direction;		// to store direction 1: clockwise, 0: counter clockwise
+bool direction;		                // to store direction 1: clockwise, 0: counter clockwise
 
 // Variables for inputting into the buffer
 char Buffer[MAX_BUFFER_SIZE];           // Allocate space for the string
