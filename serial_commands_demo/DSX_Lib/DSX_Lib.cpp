@@ -116,7 +116,7 @@ bool is_valid_analog_pin(int pin) {
  * @brief  	Initializes pins on the Arduino Uno
  *
  * @note   	Every pin in ardDioInPins is set as INPUT with pullup
- *		   	Every pin in ardDioOutPins is set as OUTPUT
+ *          Every pin in ardDioOutPins is set as OUTPUT
  *          Initializes the servo pin on pin 6
  *
  * @param  	None
@@ -230,7 +230,7 @@ void getEncoderDir() {
  *          because the input pins have the internal pullup enabled by default
  *
  * @note   	If the pin reads HIGH = 1
- *			If the pin reads LOW = 0
+ *          If the pin reads LOW = 0
  *
  * @param  	int pin
  *
@@ -265,7 +265,7 @@ void exec_analogRead(int pin) {
  * @brief  	Executes digital write command
  *
  * @note   	pin can be any pin defined in ardDioOutPins[]
- *		   	value is 0 = LOW, 1 = HIGH, anything else is 0	
+ *          value is 0 = LOW, 1 = HIGH, anything else is 0	
  *
  * @param  	int pin
  *
@@ -329,7 +329,7 @@ void exec_setPWMFreq(int pin, int value) {
  * @brief  	Executes command set PWM duty cycle
  *
  * @note   	pin can be any pin defined in ardPwmPins[]
- *			value accepts integer only from 0 - 100
+ *          value accepts integer only from 0 - 100
  *
  * @param  	int pin
  *
@@ -351,7 +351,7 @@ void exec_pwm(int pin, int value) {
  * @brief  	Executes command to rotate servo pin 
  *
  * @note   	pin can only be pin (ardServoPin)
- *			value accepts integer only from 0 - 180
+ *          value accepts integer only from 0 - 180
  *
  * @param  	int pin
  *
@@ -372,8 +372,8 @@ void exec_servoWrite(int pin, int value) {
  * @brief  	Returns buffer state
  *
  * @note   	Buffer state can either be FULL or EMPTY
- *			FULL buffer state does not mean that the buffer 
- *			has exceded MAX_BUFFER_SIZE
+ *          FULL buffer state does not mean that the buffer 
+ *          has exceded MAX_BUFFER_SIZE
  *
  * @param  	None
  *
@@ -418,8 +418,8 @@ void getDioMode(int pin) {
  * @brief  	Reads incoming data
  *
  * @note   	Incoming data is saved one byte at a time
- *			Buffer is set FULL if new line detected
- *			or if the buffer is about to overflow
+ *          Buffer is set FULL if new line detected
+ *          or if the buffer is about to overflow
  *
  * @param  	None
  *
