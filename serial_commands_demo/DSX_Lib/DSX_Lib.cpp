@@ -117,6 +117,7 @@ bool is_valid_analog_pin(int pin) {
  *
  * @note   	Every pin in ardDioInPins is set as INPUT with pullup
  *		   	Every pin in ardDioOutPins is set as OUTPUT
+ *          Initializes the servo pin on pin 6
  *
  * @param  	None
  *
@@ -140,6 +141,7 @@ void initPins() {
 
 /**
  * @brief  	Interrupt service routine of pin 2 that simply increments a variable every falling edge	
+ *          and checks what direction the encoder reading is seeing 
  *
  * @note   	None	
  *
@@ -160,7 +162,7 @@ void updateEncoder() {
 /**
  * @brief  	Executes the valid commands from packet
  *
- * @note   	The packet must have values for ID, loc, and val
+ * @note   	The packet must at least contain the correct ID. 
  *
  * @param  	packet of type DSXpacket_t
  *
@@ -222,8 +224,10 @@ void exec_command(DSXpacket_t packet) {
 void getEncoderDir() {
     Serial.println(direction);
 }
+
 /**
- * @brief  	Read digital pin, float = 1 because of pullup
+ * @brief  	Read digital pin. If the pin is floating, it will read logic HIGH
+ *          because the input pins have the internal pullup enabled by default
  *
  * @note   	If the pin reads HIGH = 1
  *			If the pin reads LOW = 0
@@ -242,7 +246,7 @@ void exec_digitalRead(int pin) {
 /**
  * @brief  	Read analog input pin
  *
- * @note   	prints input voltage (0-5V)
+ * @note   	send out voltage (0-5V) as a float
  *
  * @param  	int pin
  *
@@ -279,8 +283,9 @@ void exec_Dio(int pin, int value) {
 
 /**
  * @brief  	Executes command to set PWM frequency
+ *          The frequency of PWM is modified using masking and bit math          
  *
- * @note   	pin can be 3 or 11
+ * @note   	pin can be only 3 or 11
  *
  * @param  	int pin
  *
@@ -290,7 +295,6 @@ void exec_Dio(int pin, int value) {
  */
 void exec_setPWMFreq(int pin, int value) {
     if(pin==3 || pin==11) {
-        // set pin 3 and pin 11 pwm to the desired frequency
         switch(value) {
             case 30:
                 TCCR2B = (TCCR2B & CLEAR_LAST3_LSB) | FREQ_30HZ;
@@ -317,7 +321,6 @@ void exec_setPWMFreq(int pin, int value) {
                 Serial.println("Invalid Frequency");
                 break;
         }
-
     }
     else Serial.println("Invalid Pin");
 }
@@ -383,7 +386,7 @@ unsigned char get_buffer_state() {
 /**
  * @brief  	Show serial configuration settings
  *
- * @note   	None
+ * @note   	Default is 9600 baud, 8 data bits, no parity, and 1 stop bit
  *
  * @param  	None
  *
@@ -518,9 +521,9 @@ DSXpacket_t get_packet() {
 }
 
 /**
- * @brief  	Initialize encoder reading
+ * @brief  	Initialize encoder reading by setting pin 2 as an interrupt pin
  *
- * @note   	None
+ * @note   	Initialize encoder pin 2 and 4 as input with pullup
  *
  * @param  	None
  *
@@ -528,15 +531,13 @@ DSXpacket_t get_packet() {
  */
 void initEncoder() {
     // initialize interrupt pins 2 for reading encoder
-    pinMode(encoderChA, INPUT_PULLUP); 
-    pinMode(encoderChB, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(encoderChA),updateEncoder,RISING);
 }
 
 /**
- * @brief  	Update encoder readings, sends out rpm 
+ * @brief  	Update encoder rpm 
  *
- * @note   	Use pin 2 on the arduino uno
+ * @note   	Use pin 2 on the arduino uno for calculating encoder pulse duration
  *
  * @param  	None
  *
